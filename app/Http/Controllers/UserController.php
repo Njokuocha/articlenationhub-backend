@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
+    // scan available usernames
     public function check_username(Request $request)
     {
         $username = $request->input('username');
@@ -20,6 +21,7 @@ class UserController extends Controller
         ]);
     }
 
+    // change user names (username and name)
     public function settings_names(Request $request)
     {
         $request->validate([
@@ -50,6 +52,7 @@ class UserController extends Controller
         ]);
     }
 
+    // change user phone_number
     public function settings_phone_number(Request $request)
     {
         $request->user()->update([
@@ -71,4 +74,35 @@ class UserController extends Controller
             'status' => 'success',
         ]);
     }
+
+    // change user profile picture (avatar)
+    public function action_change_avatar(Request $request)
+    {
+        $request->validate([
+            "avatar" => "required|file|mimes:jpg,png,jpeg|max:5120", // max filesize of 5 MB
+        ]);
+
+        if($request->hasFile('avatar')){
+            $path = $request->file('avatar')->store('uploads/user', 'public');
+        }
+
+        $request->user()->update([
+            "avatar" => "http://localhost:8000/storage/" . $path,
+        ]);
+
+        return response()->noContent();
+    }
+
+    public function fetch_user_with_blogs(User $user)
+    {
+        return $user->load(['blogs' => function($query){
+            $query->orderBy('created_at', 'desc')->limit(5);
+        }]);
+    }
+
+    public function fetch_writers()
+    {
+        return User::inRandomOrder()->limit(5)->get();
+    }
+
 }
