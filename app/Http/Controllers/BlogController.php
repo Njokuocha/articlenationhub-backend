@@ -66,8 +66,19 @@ class BlogController extends Controller
         return $blog->load('user');
     }
 
-    public function fetch_blogs()
+    public function fetch_blogs(Request $request)
     {
-        return Blog::with('user')->limit(5)->get();
+        if($request->status === "update") return Blog::with('user')->orderBy('created_at', 'desc')->limit(10)->get()->shuffle();
+        return Blog::with('user')->inRandomOrder()->get();
+    }
+
+    public function fetch_blog_category(Category $category, Request $request)
+    {
+        // if($request->limit) return $category->blogs()
+        //                         ->with('user')
+        //                         ->inRandomOrder()
+        //                         ->limit($request->limit)
+        //                         ->get();
+        return $category->blogs()->with('user')->inRandomOrder()->get();
     }
 }

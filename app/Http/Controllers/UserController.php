@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -82,8 +83,15 @@ class UserController extends Controller
             "avatar" => "required|file|mimes:jpg,png,jpeg|max:5120", // max filesize of 5 MB
         ]);
 
+        $user = $request->user();
+
         if($request->hasFile('avatar')){
             $path = $request->file('avatar')->store('uploads/user', 'public');
+        }
+        
+        // Delete the old image if it exists
+        if ($user->avatar) {
+            Storage::disk('public')->delete(explode("/storage/", $user->avatar)[1]);
         }
 
         $request->user()->update([
